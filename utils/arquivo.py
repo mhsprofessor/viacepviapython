@@ -66,3 +66,14 @@ def salvar_txt(nome_arquivo, texto):
 def listar_arquivos():
     garantir_pasta()
     return [a for a in os.listdir(PASTA_DATA) if a != ".gitkeep"]
+    
+def mostrar_conteudo_arquivo(nome_arquivo):
+    arquivo = os.path.join(PASTA_DATA,nome_arquivo) 
+    if not os.path.exists(arquivo):
+        print("O arquivo " + arquivo + " não foi encontrado")
+    else:
+        with open(arquivo, "r", encoding="utf-8") as arq:
+            linhas = arq.read()
+            print(f"\nO conteúdo do {arquivo} é:")
+            print(linhas)
+

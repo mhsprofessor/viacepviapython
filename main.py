@@ -15,6 +15,7 @@ from utils.arquivo import (
     salvar_csv,
     salvar_txt,
     listar_arquivos,
+    mostrar_conteudo_arquivo,
 )
 
 
@@ -198,7 +199,16 @@ def opcao_7():
 
 def opcao_8():
     print("\n===== CONTEÚDO DOS ARQUIVOS SALVOS =====")
-
+    try:
+        arquivos = listar_arquivos()
+        if not arquivos:
+            print("Nenhum arquivo salvo em 'data/'.")
+            return
+        for arq in arquivos:
+            mostrar_conteudo_arquivo(arq)
+    except Exception as e:
+        print(f"Erro: {e}")
+        
 def main():
     estado = {}
 
