@@ -36,7 +36,8 @@ def exibir_menu():
     print("5 - Salvar ultimo resultado em CSV")
     print("6 - Salvar ultimo resultado em TXT")
     print("7 - Listar arquivos salvos")
-    print("8 - Sair")
+    print("8 - Exibir conteúdo dos arquivos")
+    print("9 - Sair")
     print()
 
     entrada = input("Informe sua opcao: ")
@@ -195,6 +196,8 @@ def opcao_7():
     except Exception as e:
         print(f"Erro: {e}")
 
+def opcao_8():
+    print("\n===== CONTEÚDO DOS ARQUIVOS SALVOS =====")
 
 def main():
     estado = {}
@@ -224,6 +227,9 @@ def main():
             opcao_7()
             aguardar()
         elif opcao == 8:
+            opcao_8()
+            aguardar()
+        elif opcao == 9:
             print("\nEncerrando...")
             break
         else:
