@@ -22,11 +22,14 @@ viacep_projeto/
 ├── services/
 │   ├── busca_cep.py       # Consultas por CEP (individual e em lote) e resumo dos dados
 │   ├── busca_endereco.py  # Consulta por UF/Cidade/Logradouro e resumo dos resultados
-│   └── validador.py       # Validações de CEP e UF
+│   ├── historico.py       # Base histórica de consultas (data/historico.csv incremental)
+│   ├── validador.py       # Validações de CEP e UF
+│   └── visualizacao.py    # Análise e gráficos matplotlib do histórico
 ├── utils/
 │   ├── arquivo.py         # Leitura e gravação de arquivos (JSON, CSV, TXT) na pasta data/
 │   └── formatador.py      # Formatação de CEP (00000-000), endereço completo e separadores
-├── data/                  # Resultados exportados (ignorada pelo Git, exceto .gitkeep)
+├── data/                  # Resultados exportados e histórico (ignorada pelo Git, exceto .gitkeep)
+├── dashboard.py           # Dashboard interativo Streamlit (gráficos e mapa do Brasil)
 ├── main.py                # Menu principal (ponto de entrada do programa)
 ├── requirements.txt       # Dependências do projeto
 ├── .gitignore
@@ -100,9 +103,40 @@ cd viacepviapython
 | 5     | Salvar o último resultado em CSV (`data/resultado.csv`)   |
 | 6     | Salvar o último resultado em TXT (`data/resultado.txt`)   |
 | 7     | Listar arquivos salvos na pasta `data/`            |
-| 8     | Sair                                               |
+| 8     | Exibir o conteúdo dos arquivos salvos              |
+| 9     | Resumo do histórico de consultas                   |
+| 10    | Gerar gráficos do histórico (PNGs em `data/graficos/`) |
+| 11    | Sair                                               |
 
 > As opções 4, 5 e 6 exigem que uma consulta (opções 1 a 3) tenha sido feita antes na mesma execução.
+
+## Histórico e visualização de dados
+
+Cada consulta bem-sucedida (opções 1 a 3) é registrada automaticamente em `data/historico.csv`, com data/hora, CEP, endereço, UF, IBGE, DDD e a origem da consulta. Sobre essa base histórica é possível:
+
+- **Resumo no terminal** (opção 9): totais, UFs e cidades distintas, registros mais frequentes.
+- **Gráficos em PNG** (opção 10): gráficos de barras por UF, cidade, bairro e DDD, salvos em `data/graficos/` com `matplotlib`.
+- **Dashboard interativo** (`dashboard.py`): métricas, gráficos interativos e um mapa do Brasil com a distribuição das consultas por UF (choropleth com `plotly`), com filtros por UF e cidade.
+
+Para abrir o dashboard:
+
+```
+streamlit run dashboard.py
+```
+
+O mapa utiliza o GeoJSON dos estados brasileiros salvo em `assets/brazil-states.geojson`.
+
+Estrutura adicional:
+
+```
+├── assets/
+│   └── brazil-states.geojson  # Geometrias dos estados (usado no mapa do dashboard)
+└── data/graficos/             # PNGs gerados pela opção 10 (ignorado pelo Git)
+```
+
+## Dependências
+
+Além do `requests`, o projeto usa `pandas`, `matplotlib`, `plotly` e `streamlit` para a camada de visualização — todas listadas em `requirements.txt`.
 
 ## Endpoints utilizados
 
@@ -126,11 +160,11 @@ A camada `api/viacep.py` converte falhas na exceção personalizada `ViaCEPError
 
 Ideias para evoluir o projeto, incluindo algumas voltadas à análise de dados:
 
-1. **Base histórica de consultas** — hoje as exportações (`resultado.csv`, `resultado.json`) sobrescrevem o arquivo anterior. Gravar cada consulta de forma acumulativa (CSV incremental ou banco SQLite), com data e hora, montaria uma base histórica pronta para análise.
+1. ~~**Base histórica de consultas**~~ — implementado: cada consulta é gravada em `data/historico.csv` (ver seção "Histórico e visualização de dados").
 
-2. **Análise exploratória com pandas** — carregar os dados salvos com `pandas` e gerar estatísticas das consultas: endereços por UF, cidade e bairro, bairros e DDDs mais frequentes, comparação entre regiões etc.
+2. **Análise exploratória com pandas** — o `services/visualizacao.py` já carrega o histórico com `pandas`; dá para estender com estatísticas mais ricas: comparação entre regiões, bairros e DDDs mais frequentes, evolução das consultas ao longo do tempo etc.
 
-3. **Visualização de dados** — criar gráficos de barras por UF/cidade com `matplotlib` ou montar um dashboard interativo com `Streamlit`, podendo incluir um mapa da distribuição das consultas pelo Brasil com `plotly`.
+3. ~~**Visualização de dados**~~ — implementado: gráficos de barras com `matplotlib` (opção 10 do menu) e dashboard interativo com `Streamlit` + mapa do Brasil com `plotly` (`dashboard.py`).
 
 4. **Testes automatizados** — adicionar testes com `pytest`, simulando as respostas da API com `unittest.mock`, para validar entradas, mensagens de erro e formatação sem depender de internet.
 
