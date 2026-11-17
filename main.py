@@ -9,6 +9,8 @@ from services.busca_endereco import (
     consultar_por_endereco,
     resumo_resultados,
 )
+from services.historico import registrar_consulta
+from services.visualizacao import gerar_graficos, resumo_historico
 from utils.formatador import linha_separadora
 from utils.arquivo import (
     salvar_json,
@@ -38,7 +40,9 @@ def exibir_menu():
     print("6 - Salvar ultimo resultado em TXT")
     print("7 - Listar arquivos salvos")
     print("8 - Exibir conteúdo dos arquivos")
-    print("9 - Sair")
+    print("9 - Resumo do historico de consultas")
+    print("10 - Gerar graficos do historico (PNG)")
+    print("11 - Sair")
     print()
 
     entrada = input("Informe sua opcao: ")
@@ -59,6 +63,7 @@ def opcao_1(estado):
         print(linha_separadora())
         print("Endereco formatado:")
         print(endereco_formatado(dados))
+        registrar_consulta(dados, origem="cep")
         estado["ultimo"] = dados
         estado["tipo"] = "cep"
     except ViaCEPError as e:
@@ -83,6 +88,7 @@ def opcao_2(estado):
         if r["sucesso"]:
             d = r["dados"]
             print(f"[OK] {r['cep']} -> {d.get('localidade', '-')}/{d.get('uf', '-')}")
+            registrar_consulta(d, origem="cep")
         else:
             print(f"[ERRO] {r['cep']} -> {r['erro']}")
     print(linha_separadora())
@@ -102,6 +108,8 @@ def opcao_3(estado):
         print(linha_separadora())
         print(resumo_resultados(resultados))
         print(linha_separadora())
+        for item in resultados:
+            registrar_consulta(item, origem="endereco")
         estado["ultimo"] = resultados
         estado["tipo"] = "lista_enderecos"
     except ViaCEPError as e:
@@ -208,7 +216,22 @@ def opcao_8():
             mostrar_conteudo_arquivo(arq)
     except Exception as e:
         print(f"Erro: {e}")
-        
+
+
+def opcao_9():
+    print("\n===== RESUMO DO HISTORICO =====")
+    print(resumo_historico())
+
+
+def opcao_10():
+    print("\n===== GERAR GRAFICOS =====")
+    criados = gerar_graficos()
+    if not criados:
+        print("Nenhuma consulta registrada ainda. Faca consultas antes.")
+        return
+    print(f"{len(criados)} grafico(s) gerado(s) em 'data/graficos/':")
+    for c in criados:
+        print(f"  - {c}")
 def main():
     estado = {}
 
@@ -240,6 +263,12 @@ def main():
             opcao_8()
             aguardar()
         elif opcao == 9:
+            opcao_9()
+            aguardar()
+        elif opcao == 10:
+            opcao_10()
+            aguardar()
+        elif opcao == 11:
             print("\nEncerrando...")
             break
         else:
